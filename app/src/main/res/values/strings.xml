@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">Weather forecast</string>
+    <string name="url">https://maceo.sth.kth.se/weather/forecast?lonLat=lon/14.333/lat/60.383</string>
+    <string name="input_city_hint">City</string>
+    <string name="header">There is no bad weather, only bad clothing.</string>
+    <string name="textView_loc">Chosen location</string>
+    <string name="approvedTime">Approved time: </string>
+    <string name="network">network</string>
+    <string name="set">SET</string>
+    <string name="nonet">No internet</string>
+    <string name="net">Connected</string>
+    <string-array name="cities_array">
+        <item>Sigfridstorp</item>
+        <item>Huddinge</item>
+        <item>Falun</item>
+        <item>Göteborg</item>
+        <item>Jönköping</item>
+        <item>Linköping</item>
+        <item>Örebro</item>
+        <item>Västerås</item>
+        <item>Helsingborg</item>
+        <item>Lund</item>
+        <item>Borås</item>
+        <item>Eskilstuna</item>
+        <item>Gävle</item>
+        <item>Halmstad</item>
+        <item>Sundsvall</item>
+        <item>Södertälje</item>
+        <item>Luleå</item>
+        <item>Malmö</item>
+        <item>Östersund</item>
+        <item>Stockholm</item>
+        <item>Visby</item>
+        <item>Uppsala</item>
+        <item>Umeå</item>
+        <item>Abisko</item>
+        <item>Kiruna</item>
+        <item>Haparanda</item>
+    </string-array>
+
+
+</resources>
