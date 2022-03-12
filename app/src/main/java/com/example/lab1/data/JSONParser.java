@@ -6,6 +6,7 @@ based on https://gits-15.sys.kth.se/anderslm/Android-Volley-RecyclerView/blob/ma
  */
 
 import android.annotation.SuppressLint;
+import android.graphics.Color;
 import android.util.Log;
 
 import com.example.lab1.R;
@@ -55,7 +56,7 @@ public class JSONParser {
     }
 
     // method to get a list with all the weather data
-    public List<Meteo> getMeteo(JSONObject meteoObj) throws JSONException, ParseException {
+    public List<MeteoModel> getMeteo(JSONObject meteoObj) throws JSONException, ParseException {
 
         String referencetime = meteoObj.getString(REFERENCE_TIME);
         String approvedtime = meteoObj.getString(APPROVED_TIME);
@@ -63,7 +64,7 @@ public class JSONParser {
 
         JSONArray timeSeries = meteoObj.getJSONArray("timeSeries");
 
-        List<Meteo> meteoData = new ArrayList<>();
+        List<MeteoModel> meteoData = new ArrayList<>();
         Log.d(LOG_TAG, "parser initialized ");
 
         for (int i = 0; i < timeSeries.length(); i++) {
@@ -73,7 +74,7 @@ public class JSONParser {
 
             JSONArray parameters = parametersAtTime.getJSONArray("parameters");
 
-            Meteo instantWeather = new Meteo();
+            MeteoModel instantWeather = new MeteoModel();
             meteoData.add(instantWeather);
             instantWeather.setTimestamp(getCleanTime(time));
             instantWeather.setApprovedTime(approvedtime);
@@ -86,27 +87,20 @@ public class JSONParser {
                 JSONArray valueArray = parameter.getJSONArray("values");
 
                 if (TEMPERATURE.equals(name)) {
-
                     instantWeather.setTemperature(valueArray.getDouble(0));
-                    //Log.d(LOG_TAG, "Temperature: " + Double.toString(valueArray.getDouble(0)));
+                    int color;
+                    if (valueArray.getDouble(0) < 0) color = Color.parseColor("#0000FF"); //blue
+                    if (valueArray.getDouble(0) >= 20) color = Color.parseColor("#FF0000"); //red
+                    else color = Color.parseColor("#000000"); //black
+                    instantWeather.setTemperatureColor(color);
                 }
                 if (WEATHER.equals(name)) {
-
                     instantWeather.setCloud(getTextCloudCoverage(valueArray.getInt(0)));
                     instantWeather.setSymbol(getSymbol(valueArray.getInt(0), instantWeather.getTimestamp()));
-                    //Log.d(LOG_TAG, "Cloud coverage: " + Double.toString(valueArray.getInt(0)));
                 }
-                if (RAIN.equals(name)) {
-                    instantWeather.setRain(valueArray.getDouble(0));
-                    //Log.d(LOG_TAG, "Rain: " + Double.toString(valueArray.getDouble(0)));
-                }
-                if (PRECIPITATION.equals(name)) {
-                    instantWeather.setPrecipitation(getTextPrecipitation(valueArray.getInt(0)));
-                }
-                if (WIND.equals(name)) {
-                    instantWeather.setWind(valueArray.getDouble(0));
-                    //Log.d(LOG_TAG, "Wind: " + Double.toString(valueArray.getInt(0)));
-                }
+                if (RAIN.equals(name)) instantWeather.setRain(valueArray.getDouble(0));
+                if (PRECIPITATION.equals(name)) instantWeather.setPrecipitation(getTextPrecipitation(valueArray.getInt(0)));
+                if (WIND.equals(name)) instantWeather.setWind(valueArray.getDouble(0));
             }
         }
         return meteoData;

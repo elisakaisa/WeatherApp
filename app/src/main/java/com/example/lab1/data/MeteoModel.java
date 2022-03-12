@@ -8,7 +8,7 @@ based on https://gits-15.sys.kth.se/anderslm/Android-Volley-RecyclerView/blob/ma
 import java.io.Serializable;
 import java.util.Objects;
 
-public class Meteo implements Serializable {
+public class MeteoModel implements Serializable {
     // time and city variables
     private String mTimestamp;
     private String mApprovedTime;
@@ -18,6 +18,7 @@ public class Meteo implements Serializable {
     private String mCloud;
     private int mSymbol;
     private double mTemperature;
+    private int color;
     private double mRain;
     private String mPrecipitation;
     private double mWind;
@@ -52,7 +53,7 @@ public class Meteo implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Meteo meteo = (Meteo) o;
+        MeteoModel meteo = (MeteoModel) o;
         return mTimestamp == meteo.mTimestamp;
     }
 
@@ -75,4 +76,8 @@ public class Meteo implements Serializable {
     public String getApprovedTime() { return mApprovedTime; }
     public String getReferenceTime() { return mReferenceTime; }
     public String getCityName() { return mCityName; }
+
+    // color of temperature display
+    public int getTemperatureColor() { return color; }
+    public void setTemperatureColor(int color) { this.color = color; }
 }

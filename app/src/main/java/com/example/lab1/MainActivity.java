@@ -14,10 +14,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.example.lab1.data.DataStorage;
 import com.example.lab1.data.JSONParser;
-import com.example.lab1.data.Meteo;
+import com.example.lab1.data.MeteoModel;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -32,7 +31,6 @@ import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.lab1.data.MeteoList;
@@ -41,7 +39,6 @@ import com.example.lab1.recyclerview.MeteoAdapter;
 import com.example.lab1.recyclerview.WeatherRecycler;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -56,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     // data variables
-    private List<Meteo> meteoList;
+    private List<MeteoModel> meteoList;
     private String mCity;
     private static long lastDownload = 0;
     private String[] mCoordinates;
@@ -94,11 +91,8 @@ public class MainActivity extends AppCompatActivity {
             isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
 
             // inform user of internet connection
-            if (isConnected){
-                textViewNet.setText(R.string.net);
-            } else {
-                textViewNet.setText(R.string.nonet);
-            }
+            if (isConnected) textViewNet.setText(R.string.net);
+            else textViewNet.setText(R.string.nonet);
 
             // update weather data
             if (isConnected &&  (System.currentTimeMillis() - lastDownload) > DOWNLOAD_UPDATE_INTERVAL) {
@@ -109,8 +103,7 @@ public class MainActivity extends AppCompatActivity {
                     printApprovedTime(mDataStorage.getMeteoList());
                     printCityName(mDataStorage.getMeteoList());
                     lastDownload = System.currentTimeMillis();
-                    Toast toast = Toast.makeText(getApplicationContext(), "Weather updated with old data", Toast.LENGTH_SHORT);
-                    toast.show();
+                    Toast.makeText(getApplicationContext(), "Weather updated with old data", Toast.LENGTH_SHORT).show();
                 }
             } else if (!isConnected &&  (System.currentTimeMillis() - lastDownload) > DOWNLOAD_UPDATE_INTERVAL)
                 if (mDataStorage != null){
@@ -118,11 +111,8 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(LOG_TAG, "weather updated from serialization, is not connected");
                     printApprovedTime(mDataStorage.getMeteoList());
                     printCityName(mDataStorage.getMeteoList());
-                    Toast toast = Toast.makeText(getApplicationContext(), "Weather updated with old data",  Toast.LENGTH_SHORT);
-                    toast.show();
+                    Toast.makeText(getApplicationContext(), "Weather updated with old data",  Toast.LENGTH_SHORT).show();
                 }
-
-            //Log.d(LOG_TAG, "No download since:  "+ (System.currentTimeMillis() - lastDownload) / 1000 + " seconds");
 
             timerHandler.postDelayed(this, NETWORK_CHECK_INTERVAL);
             //Log.d(LOG_TAG, "Timer: Is connected? " + isConnected);
@@ -146,13 +136,9 @@ public class MainActivity extends AppCompatActivity {
 
         //Autocomplete city array
         String[] cities = getResources().getStringArray(R.array.cities_array);
-        ArrayAdapter autoCompleteAdapter = new ArrayAdapter(
-                this,
-                android.R.layout.simple_list_item_1,
-                cities);
+        ArrayAdapter autoCompleteAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, cities);
         inputCity.setAdapter(autoCompleteAdapter);
         inputCity.setThreshold(0);
-
 
         // Volley
         mRequestQueue = Volley.newRequestQueue(this);
@@ -168,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        lastDownload = 0; //when screen rotates, wetaher updated from serialization
+        lastDownload = 0; //when screen rotates, weather updated from serialization
         timerHandler.postDelayed(timerRunnable, 0);
         deserialiseData();
     }
@@ -185,19 +171,13 @@ public class MainActivity extends AppCompatActivity {
         // first check connection
         if (isConnected) {
             mCity = inputCity.getText().toString(); //update city
-            // check if there is any imput
-            if (mCity.isEmpty()) {
-                Toast toast = Toast.makeText(this, "No location entered", Toast.LENGTH_SHORT);
-                toast.show();
-            } else {
+            // check if there is any input
+            if (mCity.isEmpty()) Toast.makeText(this, "No location entered", Toast.LENGTH_SHORT).show();
+            else {
                 postVolleyRequest(mCity);
                 lastDownload = System.currentTimeMillis();
             }
-
-        } else {
-            Toast toast = Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT);
-            toast.show();
-        }
+        } else Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
     }
 
     // volley request, called in onSet
@@ -218,31 +198,25 @@ public class MainActivity extends AppCompatActivity {
                             JsonObjectRequest weatherRequest = new JsonObjectRequest(Request.Method.GET,
                                     mWeatherUrl,
                                     null,
-                                    new Response.Listener<JSONObject>() {
-                                        @Override
-                                        public void onResponse(JSONObject response) {
-                                            try {
-                                                List<Meteo> newWeather = parser.getMeteo(response);
-                                                if (meteoList != null) {
-                                                    meteoList.clear();
-                                                    meteoList.addAll(newWeather);
-                                                } else {
-                                                    meteoList = newWeather;
-                                                }
-                                                // weather displayed in app + serialization
-                                                fillRecyclerView(meteoList);
-                                                serialiseData(meteoList);
+                                    response1 -> {
+                                        try {
+                                            List<MeteoModel> newWeather = parser.getMeteo(response1);
+                                            if (meteoList != null) {
+                                                meteoList.clear();
+                                                meteoList.addAll(newWeather);
+                                            } else meteoList = newWeather;
+                                            // weather displayed in app + serialization
+                                            fillRecyclerView(meteoList);
+                                            serialiseData(meteoList);
 
-                                                printApprovedTime(meteoList);
-                                                printCityName(meteoList);
+                                            printApprovedTime(meteoList);
+                                            printCityName(meteoList);
 
-                                                Toast toast = Toast.makeText(getApplicationContext(), "Download completed", Toast.LENGTH_SHORT);
-                                                toast.show();
+                                            Toast.makeText(getApplicationContext(), "Download completed", Toast.LENGTH_SHORT).show();
 
-                                            } catch (Exception e) {
-                                                Log.i("error whilst parsing", e.toString());
-                                                createMsgDialog("Parsing error", "Corrupt data").show();
-                                            }
+                                        } catch (Exception e) {
+                                            Log.i("error whilst parsing", e.toString());
+                                            createMsgDialog("Parsing error", "Corrupt data").show();
                                         }
                                     },
                                     errorListener);
@@ -260,9 +234,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // fills the recycler view with the weather
-    private void fillRecyclerView(List<Meteo> meteoData) {
+    private void fillRecyclerView(List<MeteoModel> meteoData) {
         ArrayList<MeteoList> itemList = new ArrayList<>();
-        for (Meteo instantMeteo : meteoData) {
+        for (MeteoModel instantMeteo : meteoData) {
             String time = instantMeteo.getTimestamp();
             String temperature = instantMeteo.getTemperature() + "°C";
             String cloud = instantMeteo.getCloud();
@@ -270,7 +244,8 @@ public class MainActivity extends AppCompatActivity {
             String rain = instantMeteo.getRain() + " mm/h"; // mm/h = kg/m²/h
             String precipitation = instantMeteo.getPrecipitation();
             String wind = "Wind: "+ instantMeteo.getWind() + " m/s";
-            itemList.add(new WeatherRecycler(time, temperature, cloud, weatherSymbol, rain, wind, precipitation));
+            int color = instantMeteo.getTemperatureColor();
+            itemList.add(new WeatherRecycler(time, temperature, color, cloud, weatherSymbol, rain, wind, precipitation));
         }
         RecyclerView.Adapter<MeteoAdapter.ViewHolder> adapter = new MeteoAdapter(itemList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
@@ -281,37 +256,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //output approved time
-    private void printApprovedTime(List<Meteo> meteoData) {
-        Meteo firstMeteo = meteoData.get(0);
+    private void printApprovedTime(List<MeteoModel> meteoData) {
+        MeteoModel firstMeteo = meteoData.get(0);
         String approvedTime = firstMeteo.getApprovedTime();
         String date = approvedTime.substring(0, 10);
         String time = approvedTime.substring(11, 19);
-        String approved_time = date + "\n" +time;
-        approvedTimeView.setText(getString(R.string.approvedTime) + "\n"+ approved_time);
+        String approved_time = getString(R.string.approvedTime) + "\n"+ date + "\n" +time;
+        approvedTimeView.setText(approved_time);
         Log.d(LOG_TAG, "approved time printed");
     }
 
     // output city name
-    private void printCityName(List<Meteo> meteoData) {
-        Meteo firstMeteo = meteoData.get(0);
+    private void printCityName(List<MeteoModel> meteoData) {
+        MeteoModel firstMeteo = meteoData.get(0);
         String city = firstMeteo.getCityName();
         textViewLoc.setText(city);
         Log.d(LOG_TAG, "Printed location");
     }
 
-    private final Response.ErrorListener errorListener = new Response.ErrorListener() {
-        @Override
-        public void onErrorResponse(VolleyError error) {
-            Log.i("Volley error", error.toString());
-            createMsgDialog("Network error", "Couldn't download the data").show();
-        }
+    private final Response.ErrorListener errorListener = error -> {
+        Log.i("Volley error", error.toString());
+        createMsgDialog("Network error", "Couldn't download the data").show();
     };
 
-    //SERIALIZATION
-    private void serialiseData(List<Meteo> ml){
-        /*
-        adapted from joshuadonloan.gitbooks.io/../serializable.html
-         */
+    /*--------------- DATA STORAGE -------------------------*/
+    private void serialiseData(List<MeteoModel> ml){
+        //adapted from joshuadonloan.gitbooks.io/../serializable.html
         DataStorage datastorage = new DataStorage(ml);
         try{
             FileOutputStream fos = openFileOutput("datastorage.ser", Context.MODE_PRIVATE);
@@ -327,9 +297,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void deserialiseData(){
-        /*
-        adapted from joshuadonloan.gitbooks.io/../serializable.html
-         */
+        //adapted from joshuadonloan.gitbooks.io/../serializable.html
         try{
             FileInputStream fin = openFileInput("datastorage.ser");
             // Wrapping our stream
@@ -349,10 +317,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(title);
         builder.setMessage(message);
-        builder.setPositiveButton("Ok", new AlertDialog.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-            }
-        });
+        builder.setPositiveButton("Ok", (dialog, id) -> {});
         return builder.create();
     }
 

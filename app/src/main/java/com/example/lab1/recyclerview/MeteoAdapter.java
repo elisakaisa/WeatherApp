@@ -4,6 +4,12 @@ Simple implementation of a RecyclerView.Adapter
 loosely based on https://gits-15.sys.kth.se/anderslm/Android-Volley-RecyclerView/blob/master/app/src/main/java/se/kth/anderslm/jokes/JokeAdapter.java
  */
 
+import static android.graphics.Color.*;
+
+import static java.lang.Integer.parseInt;
+
+import android.annotation.SuppressLint;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +19,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lab1.R;
@@ -65,7 +72,6 @@ public class MeteoAdapter extends RecyclerView.Adapter<MeteoAdapter.ViewHolder> 
         // create a new item view
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.meteo_item, parent, false);
-
         return new ViewHolder(itemView);
     }
 
@@ -76,6 +82,7 @@ public class MeteoAdapter extends RecyclerView.Adapter<MeteoAdapter.ViewHolder> 
         WeatherRecycler currentmeteo = (WeatherRecycler) mWeather.get(position);
         holder.timeTextView.setText(currentmeteo.getTextTime());
         holder.temperatureTextView.setText(currentmeteo.getTextTemperature());
+        holder.temperatureTextView.setTextColor(currentmeteo.getTextTemperatureColor());
         holder.cloudTextView.setText(currentmeteo.getTextCloud());
         holder.rainTextView.setText(currentmeteo.getTextRain());
         holder.windTextView.setText(currentmeteo.getTextWind());

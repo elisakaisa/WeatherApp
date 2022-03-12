@@ -7,9 +7,9 @@ import java.io.Serializable;
 import java.util.List;
 
 public class DataStorage implements Serializable {
-    private List<Meteo> mMeteoList;
+    private List<MeteoModel> mMeteoList;
 
-    public DataStorage(List<Meteo> MeteoList){ mMeteoList = MeteoList; }
-    public List<Meteo> getMeteoList(){return mMeteoList;}
+    public DataStorage(List<MeteoModel> MeteoList){ mMeteoList = MeteoList; }
+    public List<MeteoModel> getMeteoList(){return mMeteoList;}
 
 }
