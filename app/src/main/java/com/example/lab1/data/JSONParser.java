@@ -88,11 +88,15 @@ public class JSONParser {
 
                 if (TEMPERATURE.equals(name)) {
                     instantWeather.setTemperature(valueArray.getDouble(0));
-                    int color;
-                    if (valueArray.getDouble(0) < 0) color = Color.parseColor("#0000FF"); //blue
-                    if (valueArray.getDouble(0) >= 20) color = Color.parseColor("#FF0000"); //red
-                    else color = Color.parseColor("#000000"); //black
-                    instantWeather.setTemperatureColor(color);
+                    int number = (int) valueArray.getDouble(0);
+                    if (number < 0) {
+                        instantWeather.setTemperatureColor(Color.parseColor("#0000FF")); //blue
+                    }
+                    else if (number >= 20) {
+                        instantWeather.setTemperatureColor(Color.parseColor("#FF0000")); //red
+                    } else {
+                        instantWeather.setTemperatureColor(Color.parseColor("#000000")); //red
+                    }  //black
                 }
                 if (WEATHER.equals(name)) {
                     instantWeather.setCloud(getTextCloudCoverage(valueArray.getInt(0)));
