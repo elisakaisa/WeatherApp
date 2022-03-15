@@ -186,6 +186,7 @@ public class ActivityHome extends AppCompatActivity implements NavigationView.On
         mRequestQueue.cancelAll(this);
     }
 
+    //TODO implement listener (lmbda)!!!
     public void onSet(View view) {
         // first check connection
         if (isConnected) {

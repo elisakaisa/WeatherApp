@@ -5,6 +5,8 @@
       <map>
         <entry key="../../../../layout/custom_preview.xml" value="0.21302083333333333" />
         <entry key="app/src/main/res/drawable/background.xml" value="0.29" />
+        <entry key="app/src/main/res/drawable/background_bi.xml" value="0.1775" />
+        <entry key="app/src/main/res/drawable/background_meteo_item.xml" value="0.1355" />
         <entry key="app/src/main/res/drawable/ic_baseline_menu_24.xml" value="0.19" />
         <entry key="app/src/main/res/layout-land/activity_main.xml" value="0.1" />
         <entry key="app/src/main/res/layout-land/meteo_item.xml" value="0.1675485008818342" />
