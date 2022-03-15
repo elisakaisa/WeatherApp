@@ -11,6 +11,7 @@
     <string name="net">Connected</string>
     <string name="nav_close">Close navigation drawer</string>
     <string name="nav_open">Open navigation drawer</string>
+    <string name="content_description_weather">Weather symbol</string>
     <string-array name="cities_array">
         <item>Sigfridstorp</item>
         <item>Huddinge</item>
