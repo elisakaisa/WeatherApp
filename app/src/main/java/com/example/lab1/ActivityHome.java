@@ -29,9 +29,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -55,9 +55,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class ActivityHome extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
-    //log variable
     private static final String LOG_TAG = ActivityHome.class.getSimpleName();
 
     // data variables
@@ -66,11 +64,11 @@ public class ActivityHome extends AppCompatActivity implements NavigationView.On
     private static long lastDownload = 0;
     private String[] mCoordinates;
 
-    // parser & storage
+    /*------ PARSER & STORAGE --------*/
     private JSONParser parser;
     private DataStorage mDataStorage;
 
-    // ui variables
+    /*---------- HOOKS --------------*/
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -111,8 +109,7 @@ public class ActivityHome extends AppCompatActivity implements NavigationView.On
                     // update with stored data
                     fillRecyclerView(mDataStorage.getMeteoList());
                     Log.d(LOG_TAG, "weather updated from serialization, is connected");
-                    printApprovedTime(mDataStorage.getMeteoList());
-                    printCityName(mDataStorage.getMeteoList());
+                    printTimeAndCity(mDataStorage.getMeteoList());
                     lastDownload = System.currentTimeMillis();
                     Toast.makeText(getApplicationContext(), "Weather updated with old data", Toast.LENGTH_SHORT).show();
                 }
@@ -120,8 +117,7 @@ public class ActivityHome extends AppCompatActivity implements NavigationView.On
                 if (mDataStorage != null){
                     fillRecyclerView(mDataStorage.getMeteoList());
                     Log.d(LOG_TAG, "weather updated from serialization, is not connected");
-                    printApprovedTime(mDataStorage.getMeteoList());
-                    printCityName(mDataStorage.getMeteoList());
+                    printTimeAndCity(mDataStorage.getMeteoList());
                     Toast.makeText(getApplicationContext(), "Weather updated with old data",  Toast.LENGTH_SHORT).show();
                 }
 
@@ -135,19 +131,20 @@ public class ActivityHome extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // data
+        /*---------- DATA -------------*/
         meteoList = MeteoList.getInstance(); // get the singleton list
+        parser = new JSONParser();
 
-        // ui
+        /*------------ HOOKS ---------------*/
         approvedTimeView = findViewById(R.id.approvedtime_view);
         recyclerView = findViewById(R.id.recycler_view);
         textViewNet = findViewById(R.id.netView);
         textViewLoc = findViewById(R.id.textView_loc);
         inputCity = findViewById(R.id.editText_city_input);
-
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
         toolbar = findViewById(R.id.main_toolbar);
+        Button set = findViewById(R.id.set);
 
         //Autocomplete city array
         String[] cities = getResources().getStringArray(R.array.cities_array);
@@ -157,10 +154,7 @@ public class ActivityHome extends AppCompatActivity implements NavigationView.On
 
         // Volley
         mRequestQueue = Volley.newRequestQueue(this);
-        downloader = new Downloader(this);
-
-        // parser
-        parser = new JSONParser();
+        downloader = new Downloader();
 
         // deserialization
         deserialiseData();
@@ -168,6 +162,9 @@ public class ActivityHome extends AppCompatActivity implements NavigationView.On
         /*---------- INIT ----------*/
         setSupportActionBar(toolbar);   // Initialise toolbar
         initNavMenu();                  // Initialise navigation menu
+
+        /*-------------- LISTENERS --------------*/
+        set.setOnClickListener(v -> { onSet(); });
     }
 
     @Override
@@ -186,10 +183,8 @@ public class ActivityHome extends AppCompatActivity implements NavigationView.On
         mRequestQueue.cancelAll(this);
     }
 
-    //TODO implement listener (lmbda)!!!
-    public void onSet(View view) {
-        // first check connection
-        if (isConnected) {
+    public void onSet(){
+        if (isConnected) { // check connection
             mCity = inputCity.getText().toString(); //update city
             // check if there is any input
             if (mCity.isEmpty()) Toast.makeText(this, "No location entered", Toast.LENGTH_SHORT).show();
@@ -228,10 +223,7 @@ public class ActivityHome extends AppCompatActivity implements NavigationView.On
                                             // weather displayed in app + serialization
                                             fillRecyclerView(meteoList);
                                             serialiseData(meteoList);
-
-                                            printApprovedTime(meteoList);
-                                            printCityName(meteoList);
-
+                                            printTimeAndCity(meteoList);
                                             Toast.makeText(getApplicationContext(), "Download completed", Toast.LENGTH_SHORT).show();
 
                                         } catch (Exception e) {
@@ -275,8 +267,8 @@ public class ActivityHome extends AppCompatActivity implements NavigationView.On
         Log.d(LOG_TAG, "Filled recycler view");
     }
 
-    //output approved time
-    private void printApprovedTime(List<MeteoModel> meteoData) {
+    //output approved time & city name
+    private void printTimeAndCity(List<MeteoModel> meteoData) {
         MeteoModel firstMeteo = meteoData.get(0);
         String approvedTime = firstMeteo.getApprovedTime();
         String date = approvedTime.substring(0, 10);
@@ -284,11 +276,6 @@ public class ActivityHome extends AppCompatActivity implements NavigationView.On
         String approved_time = getString(R.string.approvedTime) + "\n"+ date + "\n" +time;
         approvedTimeView.setText(approved_time);
         Log.d(LOG_TAG, "approved time printed");
-    }
-
-    // output city name
-    private void printCityName(List<MeteoModel> meteoData) {
-        MeteoModel firstMeteo = meteoData.get(0);
         String city = firstMeteo.getCityName();
         textViewLoc.setText(city);
         Log.d(LOG_TAG, "Printed location");
@@ -311,9 +298,7 @@ public class ActivityHome extends AppCompatActivity implements NavigationView.On
             oos.writeObject(datastorage);
             // Closing our object stream which also closes the wrapped stream.
             oos.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void deserialiseData(){
@@ -326,10 +311,7 @@ public class ActivityHome extends AppCompatActivity implements NavigationView.On
             mDataStorage = (DataStorage)oin.readObject();
             // Closing our object stream which also closes the wrapped stream
             oin.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     // Alert dialogs for error messages
@@ -362,9 +344,7 @@ public class ActivityHome extends AppCompatActivity implements NavigationView.On
             Intent intent = new Intent(ActivityHome.this, ActivityGraph.class);
             startActivity(intent);
         }
-
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
 }
-

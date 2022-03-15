@@ -6,6 +6,7 @@ based on https://gits-15.sys.kth.se/anderslm/Android-Volley-RecyclerView/blob/ma
  */
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Color;
 import android.util.Log;
 
@@ -88,15 +89,8 @@ public class JSONParser {
 
                 if (TEMPERATURE.equals(name)) {
                     instantWeather.setTemperature(valueArray.getDouble(0));
-                    int number = (int) valueArray.getDouble(0);
-                    if (number < 0) {
-                        instantWeather.setTemperatureColor(Color.parseColor("#0000FF")); //blue
-                    }
-                    else if (number >= 20) {
-                        instantWeather.setTemperatureColor(Color.parseColor("#FF0000")); //red
-                    } else {
-                        instantWeather.setTemperatureColor(Color.parseColor("#000000")); //red
-                    }  //black
+                    instantWeather.setTemperatureColor(colorSelection((int) valueArray.getDouble(0)));
+
                 }
                 if (WEATHER.equals(name)) {
                     instantWeather.setCloud(getTextCloudCoverage(valueArray.getInt(0)));
@@ -108,6 +102,14 @@ public class JSONParser {
             }
         }
         return meteoData;
+    }
+
+    private int colorSelection(int temperature){
+        int color;
+        if (temperature < 0) color = R.color.blue;
+        else if (temperature >= 20) color = R.color.red;
+        else color = R.color.black;
+        return color;
     }
 
     // changes date and time to a more readable format
