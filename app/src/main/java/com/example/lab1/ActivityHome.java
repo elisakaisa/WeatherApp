@@ -6,8 +6,13 @@ HT 2021, CM2001 Mobile applications
 Lab1: weather app
  */
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,11 +22,13 @@ import com.example.lab1.data.JSONParser;
 import com.example.lab1.data.MeteoModel;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -37,6 +44,7 @@ import com.example.lab1.data.MeteoList;
 import com.example.lab1.network.Downloader;
 import com.example.lab1.recyclerview.MeteoAdapter;
 import com.example.lab1.recyclerview.WeatherRecycler;
+import com.google.android.material.navigation.NavigationView;
 
 import org.json.JSONArray;
 
@@ -48,9 +56,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity {
+public class ActivityHome extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
     //log variable
-    private static final String LOG_TAG = MainActivity.class.getSimpleName();
+    private static final String LOG_TAG = ActivityHome.class.getSimpleName();
 
     // data variables
     private List<MeteoModel> meteoList;
@@ -63,6 +71,9 @@ public class MainActivity extends AppCompatActivity {
     private DataStorage mDataStorage;
 
     // ui variables
+    private Toolbar toolbar;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
     private TextView approvedTimeView;
     private RecyclerView recyclerView;
     private TextView textViewNet;
@@ -134,6 +145,10 @@ public class MainActivity extends AppCompatActivity {
         textViewLoc = findViewById(R.id.textView_loc);
         inputCity = findViewById(R.id.editText_city_input);
 
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+        toolbar = findViewById(R.id.main_toolbar);
+
         //Autocomplete city array
         String[] cities = getResources().getStringArray(R.array.cities_array);
         ArrayAdapter autoCompleteAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, cities);
@@ -149,6 +164,10 @@ public class MainActivity extends AppCompatActivity {
 
         // deserialization
         deserialiseData();
+
+        /*---------- INIT ----------*/
+        setSupportActionBar(toolbar);   // Initialise toolbar
+        initNavMenu();                  // Initialise navigation menu
     }
 
     @Override
@@ -321,5 +340,30 @@ public class MainActivity extends AppCompatActivity {
         return builder.create();
     }
 
+    /*----------- NAV MENU ------------------*/
+    private void initNavMenu(){
+        navigationView.bringToFront();
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,drawerLayout, toolbar,
+                R.string.nav_open, R.string.nav_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+        navigationView.setNavigationItemSelectedListener((NavigationView.OnNavigationItemSelectedListener) this);
+        navigationView.setCheckedItem(R.id.nav_home);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        int id = menuItem.getItemId();
+        if (id == R.id.nav_settings){
+            Intent intent = new Intent(ActivityHome.this, ActivitySettings.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_graph) {
+            Intent intent = new Intent(ActivityHome.this, ActivityGraph.class);
+            startActivity(intent);
+        }
+
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
 }
 

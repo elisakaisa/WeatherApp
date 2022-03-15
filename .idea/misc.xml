@@ -4,11 +4,18 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="../../../../layout/custom_preview.xml" value="0.21302083333333333" />
-        <entry key="app/src/main/res/layout-land/activity_main.xml" value="0.1675485008818342" />
+        <entry key="app/src/main/res/drawable/background.xml" value="0.29" />
+        <entry key="app/src/main/res/drawable/ic_baseline_menu_24.xml" value="0.19" />
+        <entry key="app/src/main/res/layout-land/activity_main.xml" value="0.1" />
         <entry key="app/src/main/res/layout-land/meteo_item.xml" value="0.1675485008818342" />
-        <entry key="app/src/main/res/layout/activity_main.xml" value="0.17299898682877407" />
+        <entry key="app/src/main/res/layout/activity_graph.xml" value="0.18177083333333333" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_settings.xml" value="0.18177083333333333" />
+        <entry key="app/src/main/res/layout/menu_header.xml" value="0.2859375" />
         <entry key="app/src/main/res/layout/meteo_item.xml" value="0.19791666666666666" />
         <entry key="app/src/main/res/layout/settings_activity.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/toolbar.xml" value="0.18177083333333333" />
+        <entry key="app/src/main/res/menu/menu.xml" value="0.35625" />
         <entry key="app/src/main/res/menu/menu_main.xml" value="0.35572916666666665" />
         <entry key="app/src/main/res/xml/root_preferences.xml" value="0.23854166666666668" />
       </map>

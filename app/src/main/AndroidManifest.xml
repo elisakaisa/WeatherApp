@@ -14,7 +14,13 @@
         android:theme="@style/Theme.Lab1">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".ActivityGraph"
+            android:exported="false"/>
+        <activity
+            android:name=".ActivitySettings"
+            android:exported="false"/>
+        <activity
+            android:name=".ActivityHome"
             android:exported="true"
             android:launchMode="singleTop">
             <intent-filter>
