@@ -1,6 +1,6 @@
 package com.example.lab1;
 
-import android.app.AlertDialog;
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -12,32 +12,27 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.example.lab1.data.DataStorage;
-import com.example.lab1.data.JSONParser;
 import com.example.lab1.data.MeteoList;
 import com.example.lab1.data.MeteoModel;
-import com.example.lab1.network.Downloader;
 import com.example.lab1.recyclerview.MeteoAdapter;
 import com.example.lab1.recyclerview.WeatherRecycler;
 import com.example.lab1.viewModel.ConnectivityVM;
-import com.example.lab1.viewModel.WeatherForecastInterface;
 import com.example.lab1.viewModel.WeatherViewModel;
 
-import org.json.JSONArray;
-
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -48,6 +43,7 @@ public class FragmentHome extends Fragment {
 
     // data variables
     private static long lastDownload = 0;
+    private static final int DOWNLOAD_UPDATE_INTERVAL = 3600000; //ms (update every 1h)
 
     /*------ PARSER & STORAGE --------*/
     private DataStorage mDataStorage;
@@ -63,26 +59,7 @@ public class FragmentHome extends Fragment {
     private WeatherViewModel weatherVM;
 
     // networking variables
-    private boolean connected; //=true if connected, otherwise false
-    /*
-            // update weather data
-            if (isConnected &&  (System.currentTimeMillis() - lastDownload) > DOWNLOAD_UPDATE_INTERVAL) {
-                if (mDataStorage != null){
-                    // update with stored data
-                    fillRecyclerView(mDataStorage.getMeteoList());
-                    Log.d("frag", "weather updated from serialization, is connected");
-                    printTimeAndCity(mDataStorage.getMeteoList());
-                    lastDownload = System.currentTimeMillis();
-                    Toast.makeText(getActivity(), "Weather updated with old data", Toast.LENGTH_SHORT).show();
-                }
-            } else if (!isConnected &&  (System.currentTimeMillis() - lastDownload) > DOWNLOAD_UPDATE_INTERVAL)
-                if (mDataStorage != null){
-                    fillRecyclerView(mDataStorage.getMeteoList());
-                    Log.d("Frag", "weather updated from serialization, is not connected");
-                    printTimeAndCity(mDataStorage.getMeteoList());
-                    Toast.makeText(getActivity(), "Weather updated with old data",  Toast.LENGTH_SHORT).show();
-        }
-    }; */
+    private boolean isConnected; //=true if connected, otherwise false
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -138,17 +115,25 @@ public class FragmentHome extends Fragment {
         Button set = view.findViewById(R.id.set);
 
         /*------------ VM ---------------*/
+        AtomicInteger counter = new AtomicInteger();
         connectivityVM = new ViewModelProvider(requireActivity()).get(ConnectivityVM.class);
         weatherVM = new ViewModelProvider(requireActivity()).get(WeatherViewModel.class);
+        connectivityVM.getConnection().observe(requireActivity(), connected -> {
+            isConnected = connected;
+
+            if (counter.get() == 0) { // makes sure it only happens once and not every 10 secs
+                // deserialization
+                deserialiseData();
+                updateUIWithDefaultData(connected);
+            }
+            counter.set(counter.get() + 1);
+        });
 
         //Autocomplete city array
         String[] cities = getResources().getStringArray(R.array.cities_array);
-        //ArrayAdapter autoCompleteAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, cities);
-        //inputCity.setAdapter(autoCompleteAdapter);
-        //inputCity.setThreshold(0);
-
-        // deserialization
-        deserialiseData();
+        ArrayAdapter autoCompleteAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, cities);
+        inputCity.setAdapter(autoCompleteAdapter);
+        inputCity.setThreshold(0);
 
         /*-------------- LISTENERS --------------*/
         set.setOnClickListener(v -> onSet());
@@ -163,9 +148,25 @@ public class FragmentHome extends Fragment {
         return view;
     }
 
+    public void updateUIWithDefaultData(Boolean conn) {
+        // if internet connection, update with default city, else with old data
+        if (conn) {
+            String defaultCity = "Huddinge";
+            weatherVM.loadWeatherForecast(defaultCity);
+            lastDownload = System.currentTimeMillis();
+        } else {
+            if (mDataStorage != null) {
+                // update with stored data
+                fillRecyclerView(mDataStorage.getMeteoList());
+                Log.d("frag", "weather updated from serialization, is connected");
+                printTimeAndCity(mDataStorage.getMeteoList());
+                Toast.makeText(getActivity(), "Weather updated with old data", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
     public void onSet(){
-        connected = connectivityVM.getIsConnected();
-        if (connected) { // check connection
+        if (isConnected) { // check connection
             String mCity = inputCity.getText().toString(); //update city
             // check if there is any input
             if (mCity.isEmpty()) Toast.makeText(getActivity(), "No location entered", Toast.LENGTH_SHORT).show();
@@ -195,7 +196,6 @@ public class FragmentHome extends Fragment {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
-        Log.d("frag", "Filled recycler view");
     }
 
     //output approved time & city name
@@ -206,10 +206,8 @@ public class FragmentHome extends Fragment {
         String time = approvedTime.substring(11, 19);
         String approved_time = getString(R.string.approvedTime) + "\n"+ date + "\n" +time;
         approvedTimeView.setText(approved_time);
-        Log.d("frag", "approved time printed");
         String city = firstMeteo.getCityName();
         textViewLoc.setText(city);
-        Log.d("frag", "Printed location");
     }
 
     /*--------------- DATA STORAGE -------------------------*/
@@ -217,35 +215,26 @@ public class FragmentHome extends Fragment {
         //adapted from joshuadonloan.gitbooks.io/../serializable.html
         DataStorage datastorage = new DataStorage(ml);
         try{
-            /*FileOutputStream fos = openFileOutput("datastorage.ser", Context.MODE_PRIVATE);
+            FileOutputStream fos = getContext().openFileOutput("datastorage.ser", Context.MODE_PRIVATE);
             // Wrapping our file stream
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             // Writing the serializable object to the file
             oos.writeObject(datastorage);
             // Closing our object stream which also closes the wrapped stream.
-            oos.close();*/
+            oos.close();
         } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void deserialiseData(){
         //adapted from joshuadonloan.gitbooks.io/../serializable.html
         try{
-           /* FileInputStream fin = openFileInput("datastorage.ser");
+            FileInputStream fin = getContext().openFileInput("datastorage.ser");
             // Wrapping our stream
             ObjectInputStream oin = new ObjectInputStream(fin);
             // Reading in our object
             mDataStorage = (DataStorage)oin.readObject();
             // Closing our object stream which also closes the wrapped stream
-            oin.close();*/
+            oin.close();
         } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    // Alert dialogs for error messages
-    private AlertDialog createMsgDialog(String title, String message) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(title);
-        builder.setMessage(message);
-        builder.setPositiveButton("Ok", (dialog, id) -> {});
-        return builder.create();
     }
 }

@@ -58,7 +58,7 @@ public class ActivityHome extends AppCompatActivity implements NavigationView.On
 
     // networking variables
     private static boolean isConnected; //=true if connected, otherwise false
-    private static final int DOWNLOAD_UPDATE_INTERVAL = 3600000; //ms (update every 1h)
+
     private static final int NETWORK_CHECK_INTERVAL = 10000; //ms (check network every 10 seconds)
     private final Handler timerHandler = new Handler();
 
@@ -111,7 +111,6 @@ public class ActivityHome extends AppCompatActivity implements NavigationView.On
         super.onStart();
         lastDownload = 0; //when screen rotates, weather updated from serialization
         timerHandler.postDelayed(timerRunnable, 0);
-        //deserialiseData();
     }
 
     @Override

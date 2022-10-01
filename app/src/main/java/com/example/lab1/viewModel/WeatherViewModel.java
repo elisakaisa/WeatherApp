@@ -1,6 +1,7 @@
 package com.example.lab1.viewModel;
 
 import android.app.Application;
+import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -15,6 +16,7 @@ import com.android.volley.Response;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.lab1.data.DataStorage;
 import com.example.lab1.data.JSONParser;
 import com.example.lab1.data.MeteoList;
 import com.example.lab1.data.MeteoModel;
@@ -22,6 +24,10 @@ import com.example.lab1.network.Downloader;
 
 import org.json.JSONArray;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.List;
 
 public class WeatherViewModel extends AndroidViewModel {
@@ -31,6 +37,7 @@ public class WeatherViewModel extends AndroidViewModel {
     }
 
     private final JSONParser cParser = new JSONParser();
+    private DataStorage mDataStorage;
     private final RequestQueue mRequestQueue;
     private WeatherForecastInterface listener;
 
@@ -39,6 +46,7 @@ public class WeatherViewModel extends AndroidViewModel {
     public LiveData<List<MeteoModel>> getWeatherForecast() {
         if (weatherForecast == null) {
             weatherForecast = new MutableLiveData<>();
+            deserialiseData();
         }
         return weatherForecast;
     }
@@ -78,6 +86,7 @@ public class WeatherViewModel extends AndroidViewModel {
                                             } else meteoList = newWeather;
                                             // weather displayed in app + serialization
                                             listener.onWeatherFetched(meteoList);
+                                            serialiseData(meteoList);
 
                                         } catch (Exception e) {
                                             Log.i("error whilst parsing", e.toString());
@@ -102,5 +111,34 @@ public class WeatherViewModel extends AndroidViewModel {
         Log.i("Volley error", error.toString());
     };
 
+
+    /*--------------- DATA STORAGE -------------------------*/
+    private void serialiseData(List<MeteoModel> ml){
+        //adapted from joshuadonloan.gitbooks.io/../serializable.html
+        DataStorage datastorage = new DataStorage(ml);
+        try{
+            FileOutputStream fos = getApplication().openFileOutput("datastorage.ser", Context.MODE_PRIVATE);
+            // Wrapping our file stream
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            // Writing the serializable object to the file
+            oos.writeObject(datastorage);
+            // Closing our object stream which also closes the wrapped stream.
+            oos.close();
+            Log.i("VM", "data serialized");
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    private void deserialiseData(){
+        //adapted from joshuadonloan.gitbooks.io/../serializable.html
+        try{
+            FileInputStream fin = getApplication().openFileInput("datastorage.ser");
+            // Wrapping our stream
+            ObjectInputStream oin = new ObjectInputStream(fin);
+            // Reading in our object
+            mDataStorage = (DataStorage)oin.readObject();
+            // Closing our object stream which also closes the wrapped stream
+            oin.close();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
 
 }
