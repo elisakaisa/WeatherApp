@@ -8,11 +8,13 @@
         <entry key="app/src/main/res/drawable/background_bi.xml" value="0.1775" />
         <entry key="app/src/main/res/drawable/background_meteo_item.xml" value="0.1355" />
         <entry key="app/src/main/res/drawable/ic_baseline_menu_24.xml" value="0.19" />
+        <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.2835" />
         <entry key="app/src/main/res/layout-land/activity_main.xml" value="0.1" />
         <entry key="app/src/main/res/layout-land/meteo_item.xml" value="0.1675485008818342" />
         <entry key="app/src/main/res/layout/activity_graph.xml" value="0.18177083333333333" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_settings.xml" value="0.18177083333333333" />
+        <entry key="app/src/main/res/layout/base_activity.xml" value="0.246875" />
         <entry key="app/src/main/res/layout/menu_header.xml" value="0.2859375" />
         <entry key="app/src/main/res/layout/meteo_item.xml" value="0.19791666666666666" />
         <entry key="app/src/main/res/layout/settings_activity.xml" value="0.25" />
