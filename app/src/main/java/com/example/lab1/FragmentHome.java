@@ -31,6 +31,8 @@ import com.example.lab1.network.Downloader;
 import com.example.lab1.recyclerview.MeteoAdapter;
 import com.example.lab1.recyclerview.WeatherRecycler;
 import com.example.lab1.viewModel.ConnectivityVM;
+import com.example.lab1.viewModel.WeatherForecastInterface;
+import com.example.lab1.viewModel.WeatherViewModel;
 
 import org.json.JSONArray;
 
@@ -45,30 +47,23 @@ import java.util.List;
 public class FragmentHome extends Fragment {
 
     // data variables
-    private List<MeteoModel> meteoList;
-    private String mCity;
     private static long lastDownload = 0;
-    private String[] mCoordinates;
 
     /*------ PARSER & STORAGE --------*/
-    private JSONParser parser;
     private DataStorage mDataStorage;
 
     /*---------- HOOKS --------------*/
     private TextView approvedTimeView;
     private RecyclerView recyclerView;
-    private TextView textViewNet;
     private TextView textViewLoc;
     private AutoCompleteTextView inputCity;
 
-    // Volley
-    private RequestQueue mRequestQueue;
-
+    /*---------- VM --------------*/
     private ConnectivityVM connectivityVM;
+    private WeatherViewModel weatherVM;
 
     // networking variables
-    public Downloader downloader;
-    private static boolean connected; //=true if connected, otherwise false
+    private boolean connected; //=true if connected, otherwise false
     /*
             // update weather data
             if (isConnected &&  (System.currentTimeMillis() - lastDownload) > DOWNLOAD_UPDATE_INTERVAL) {
@@ -135,10 +130,6 @@ public class FragmentHome extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         // Inflate the layout for this fragment
 
-        /*---------- DATA -------------*/
-        meteoList = MeteoList.getInstance(); // get the singleton list
-        parser = new JSONParser();
-
         /*------------ HOOKS ---------------*/
         approvedTimeView = view.findViewById(R.id.approvedtime_view);
         recyclerView = view.findViewById(R.id.recycler_view);
@@ -148,6 +139,7 @@ public class FragmentHome extends Fragment {
 
         /*------------ VM ---------------*/
         connectivityVM = new ViewModelProvider(requireActivity()).get(ConnectivityVM.class);
+        weatherVM = new ViewModelProvider(requireActivity()).get(WeatherViewModel.class);
 
         //Autocomplete city array
         String[] cities = getResources().getStringArray(R.array.cities_array);
@@ -155,15 +147,18 @@ public class FragmentHome extends Fragment {
         //inputCity.setAdapter(autoCompleteAdapter);
         //inputCity.setThreshold(0);
 
-        // Volley
-        mRequestQueue = Volley.newRequestQueue(getActivity());
-        downloader = new Downloader();
-
         // deserialization
         deserialiseData();
 
         /*-------------- LISTENERS --------------*/
-        set.setOnClickListener(v -> { onSet(); });
+        set.setOnClickListener(v -> onSet());
+
+        weatherVM.setWeatherListener((list) -> {
+            fillRecyclerView(list);
+            serialiseData(list);
+            printTimeAndCity(list);
+            Toast.makeText(getActivity(), "Download completed", Toast.LENGTH_SHORT).show();
+        });
 
         return view;
     }
@@ -171,64 +166,14 @@ public class FragmentHome extends Fragment {
     public void onSet(){
         connected = connectivityVM.getIsConnected();
         if (connected) { // check connection
-            mCity = inputCity.getText().toString(); //update city
+            String mCity = inputCity.getText().toString(); //update city
             // check if there is any input
             if (mCity.isEmpty()) Toast.makeText(getActivity(), "No location entered", Toast.LENGTH_SHORT).show();
             else {
-                postVolleyRequest(mCity);
+                weatherVM.loadWeatherForecast(mCity);
                 lastDownload = System.currentTimeMillis();
             }
         } else Toast.makeText(getActivity(), "No internet connection", Toast.LENGTH_SHORT).show();
-    }
-
-    // volley request, called in onSet
-    public void postVolleyRequest(String cityName) {
-        // city to coordinates
-        String mCityUrl = downloader.setCityURL(cityName);
-        JsonArrayRequest cityRequest = new JsonArrayRequest(Request.Method.GET,
-                mCityUrl,
-                null,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        try {
-                            mCoordinates = parser.getCity(response);
-                            String mWeatherUrl = downloader.setWeatherURL(mCoordinates);
-
-                            // get weather
-                            JsonObjectRequest weatherRequest = new JsonObjectRequest(Request.Method.GET,
-                                    mWeatherUrl,
-                                    null,
-                                    response1 -> {
-                                        try {
-                                            List<MeteoModel> newWeather = parser.getMeteo(response1);
-                                            if (meteoList != null) {
-                                                meteoList.clear();
-                                                meteoList.addAll(newWeather);
-                                            } else meteoList = newWeather;
-                                            // weather displayed in app + serialization
-                                            fillRecyclerView(meteoList);
-                                            serialiseData(meteoList);
-                                            printTimeAndCity(meteoList);
-                                            Toast.makeText(getActivity(), "Download completed", Toast.LENGTH_SHORT).show();
-
-                                        } catch (Exception e) {
-                                            Log.i("error whilst parsing", e.toString());
-                                            createMsgDialog("Parsing error", "Corrupt data").show();
-                                        }
-                                    },
-                                    errorListener);
-                            weatherRequest.setTag(this);
-                            mRequestQueue.add(weatherRequest);
-                        } catch (Exception e) {
-                            Log.i("error whilst parsing", e.toString());
-                            createMsgDialog("Location out of bounds", "Please enter valid location").show();
-                        }
-                    }
-                },
-                errorListener);
-        cityRequest.setTag(this);
-        mRequestQueue.add(cityRequest);
     }
 
     // fills the recycler view with the weather
@@ -266,11 +211,6 @@ public class FragmentHome extends Fragment {
         textViewLoc.setText(city);
         Log.d("frag", "Printed location");
     }
-
-    private final Response.ErrorListener errorListener = error -> {
-        Log.i("Volley error", error.toString());
-        createMsgDialog("Network error", "Couldn't download the data").show();
-    };
 
     /*--------------- DATA STORAGE -------------------------*/
     private void serialiseData(List<MeteoModel> ml){
