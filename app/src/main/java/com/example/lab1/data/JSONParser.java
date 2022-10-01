@@ -106,9 +106,11 @@ public class JSONParser {
 
     private int colorSelection(int temperature){
         int color;
-        if (temperature < 0) color = R.color.blue;
-        else if (temperature >= 20) color = R.color.red;
-        else color = R.color.black;
+        if (temperature > 19) {
+            color = R.color.dark_red;
+        } else if (temperature < 0) {
+            color = R.color.black;
+        } else color = R.color.red;
         return color;
     }
 
@@ -121,8 +123,7 @@ public class JSONParser {
         sdFormat.applyPattern(newFormat);
         String validDateS = sdFormat.format(validDate);
         String validTime = validOriginalTime.substring(11,16);
-        String validCleanTime = validDateS + " " + validTime;
-        return validCleanTime;
+        return validDateS + " " + validTime;
     }
 
     private static String getTextPrecipitation(int precipitationValue) {
