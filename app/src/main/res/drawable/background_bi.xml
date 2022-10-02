@@ -6,7 +6,7 @@
                 android:startColor="@color/top_pink"
                 android:centerColor="@color/middle_purple"
                 android:endColor="@color/bottom_blue"
-                android:angle="270"/>
+                android:angle="270" />
         </shape>
     </item>
 

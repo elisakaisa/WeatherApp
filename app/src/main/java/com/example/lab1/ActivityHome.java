@@ -28,6 +28,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -75,7 +76,7 @@ public class ActivityHome extends AppCompatActivity implements NavigationView.On
 
             // inform user of internet connection
             if (isConnected) {
-                textViewNet.setText(R.string.net);
+                textViewNet.setVisibility(View.GONE);
                 connectivityVM.setIsConnected(true);
             } else {
                 textViewNet.setText(R.string.nonet);

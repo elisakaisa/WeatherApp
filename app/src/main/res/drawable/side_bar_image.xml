@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item>
+        <shape
+            android:shape="rectangle"
+            android:padding="10dp">
+            <solid android:color="@color/blue_zodiac" />
+            <corners
+                android:bottomRightRadius="5dp"
+                android:bottomLeftRadius="5dp"
+                android:topLeftRadius="5dp"
+                android:topRightRadius="5dp" />
+        </shape>
+    </item>
+    <item
+        android:drawable="@drawable/day_1"
+        android:top="50dp"
+        android:bottom="50dp"
+        android:right="50dp"
+        android:left="50dp"/>
+</layer-list>

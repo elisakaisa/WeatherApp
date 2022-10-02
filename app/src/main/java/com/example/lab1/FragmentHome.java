@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -44,6 +45,7 @@ public class FragmentHome extends Fragment {
     // data variables
     private static long lastDownload = 0;
     private static final int DOWNLOAD_UPDATE_INTERVAL = 3600000; //ms (update every 1h)
+    private String city;
 
     /*------ PARSER & STORAGE --------*/
     private DataStorage mDataStorage;
@@ -113,6 +115,7 @@ public class FragmentHome extends Fragment {
         textViewLoc = view.findViewById(R.id.textView_loc);
         inputCity = view.findViewById(R.id.editText_city_input);
         Button set = view.findViewById(R.id.set);
+        SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swipeRefresh);
 
         /*------------ VM ---------------*/
         AtomicInteger counter = new AtomicInteger();
@@ -143,6 +146,15 @@ public class FragmentHome extends Fragment {
             serialiseData(list);
             printTimeAndCity(list);
             Toast.makeText(getActivity(), "Download completed", Toast.LENGTH_SHORT).show();
+        });
+
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            String cityToUpdate = String.valueOf(textViewLoc.getText());
+            if (cityToUpdate != "Chosen loation") {
+                weatherVM.loadWeatherForecast(cityToUpdate);
+                lastDownload = System.currentTimeMillis();
+            }
+            swipeRefreshLayout.setRefreshing(false);
         });
 
         return view;

@@ -46,7 +46,6 @@ public class WeatherViewModel extends AndroidViewModel {
     public LiveData<List<MeteoModel>> getWeatherForecast() {
         if (weatherForecast == null) {
             weatherForecast = new MutableLiveData<>();
-            deserialiseData();
         }
         return weatherForecast;
     }

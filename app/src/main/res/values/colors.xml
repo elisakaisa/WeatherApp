@@ -14,4 +14,11 @@
     <color name="red">#FF0000</color>
     <color name="blue">#0000FF</color>
     <color name='dark_red'>#3F0000</color>
+
+    <color name="rose_white">#FFFEFE</color>
+    <color name="regal_blue">#02477A</color>
+    <color name="outer_space">#1A211F</color>
+    <color name="blue_zodiac">#0E2E4A</color>
+    <color name="matisse">#1C4C90</color>
+    <color name="light_outer_space">#a9bbb6</color>
 </resources>
